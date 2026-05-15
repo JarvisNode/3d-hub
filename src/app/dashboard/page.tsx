@@ -14,26 +14,43 @@ export default function DashboardPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // 1. First check the current session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        // Only redirect if we are sure there is no session
-        router.replace("/login");
-      } else {
-        fetchUserOrders(session.user.email);
-      }
-    });
+    let mounted = true;
+    console.log("Dashboard: Checking auth state...");
 
-    // 2. Listen for auth changes
+    const checkSession = async () => {
+      // Small delay to let Supabase initialize storage session
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log("Dashboard Initial Session:", session ? "Found" : "Not Found");
+
+      if (!mounted) return;
+
+      if (session) {
+        fetchUserOrders(session.user.email);
+      } else {
+        console.log("Dashboard: No session, redirecting to login...");
+        router.push("/login");
+      }
+    };
+
+    checkSession();
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Dashboard Auth Event:", event, session ? "Session Active" : "No Session");
+      if (!mounted) return;
+
       if (event === "SIGNED_OUT" || !session) {
-        router.replace("/login");
+        router.push("/login");
       } else if (session) {
         fetchUserOrders(session.user.email);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [router]);
 
   async function fetchUserOrders(email: string | undefined) {
