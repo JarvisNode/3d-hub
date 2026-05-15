@@ -14,34 +14,45 @@ export default function DashboardPage() {
   const router = useRouter();
 
   useEffect(() => {
-    async function checkUserAndFetchOrders() {
-      setLoading(true);
-      try {
-        // Use getSession for faster/more reliable session check on mount
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session?.user) {
-          router.push("/login");
-          return;
-        }
-
-        const { data, error } = await supabase
-          .from('orders')
-          .select('*')
-          .eq('customer_email', session.user.email)
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-        setOrders(data || []);
-      } catch (err) {
-        console.error("Error:", err);
-      } finally {
-        setLoading(false);
+    // 1. First check the current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        // Only redirect if we are sure there is no session
+        router.replace("/login");
+      } else {
+        fetchUserOrders(session.user.email);
       }
-    }
+    });
 
-    checkUserAndFetchOrders();
+    // 2. Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT" || !session) {
+        router.replace("/login");
+      } else if (session) {
+        fetchUserOrders(session.user.email);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [router]);
+
+  async function fetchUserOrders(email: string | undefined) {
+    if (!email) return;
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('customer_email', email)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setOrders(data || []);
+    } catch (err) {
+      console.error("Fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   if (loading) {
     return (
