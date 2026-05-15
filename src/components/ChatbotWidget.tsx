@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bot, X, Send, Mic, Paperclip, Image as ImageIcon, CheckCircle2, MessageSquare, Loader2, Sparkles, ExternalLink } from "lucide-react";
+import { Bot, X, Send, Mic, Paperclip, Image as ImageIcon, CheckCircle2, MessageSquare, Loader2, Sparkles, Box } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 type Message = {

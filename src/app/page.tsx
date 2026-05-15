@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight, Upload, Box, Star } from "lucide-react";
+import { ArrowRight, Upload, Box, Star, MessageCircle } from "lucide-react";
 import ThreeDModel from "@/components/ThreeDModel";
 
 export default function Home() {

@@ -38,15 +38,43 @@ export default function UploadPage() {
     formData.append("subject", "New STL Print Quote Request from 3D Hub");
 
     try {
-      // 1. Send Email via Web3Forms
+      const file = formData.get("attachment") as File;
+      let fileUrl = "";
+      
+      // 1. Upload to Supabase Storage
+      if (file && file.size > 0) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random()}-${Date.now()}.${fileExt}`;
+        const { error: storageError } = await supabase.storage
+          .from('orders')
+          .upload(fileName, file);
+
+        if (storageError) throw storageError;
+
+        const { data: publicUrlData } = supabase.storage
+          .from('orders')
+          .getPublicUrl(fileName);
+          
+        fileUrl = publicUrlData.publicUrl;
+      }
+
+      // 2. Prepare Email Data (without file to bypass free plan limit)
+      const emailFormData = new FormData();
+      emailFormData.append("access_key", "5ad63c28-59e5-4289-a5a6-dd17fc95c565");
+      emailFormData.append("subject", "New STL Print Request");
+      emailFormData.append("customer_email", formData.get("customer_email") as string);
+      emailFormData.append("material", formData.get("material") as string);
+      emailFormData.append("infill_density", formData.get("infill_density") as string);
+      emailFormData.append("file_link", fileUrl);
+
       const response = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
-        body: formData
+        body: emailFormData
       });
       const data = await response.json();
-      
+
       if (data.success) {
-        // 2. Save to Supabase Database
+        // 3. Save to Database
         const { error: dbError } = await supabase
           .from('orders')
           .insert([{
@@ -65,12 +93,11 @@ export default function UploadPage() {
         setSelectedFileName(null);
         setTimeout(() => setIsSuccessStl(false), 5000);
       } else {
-        console.error("Web3Forms error:", data);
-        alert("Failed to submit form. Please make sure the file is under 5MB.");
+        alert(`Submission Failed: ${data.message}`);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Submission error:", error);
-      alert("Something went wrong. Please try again.");
+      alert(`Error: ${error.message || "Something went wrong"}`);
     } finally {
       setIsSubmittingStl(false);
     }
@@ -87,15 +114,43 @@ export default function UploadPage() {
     formData.append("subject", "New Custom Design Request from 3D Hub");
 
     try {
-      // 1. Send Email via Web3Forms
+      const file = formData.get("attachment") as File;
+      let fileUrl = "";
+      
+      // 1. Upload to Supabase Storage
+      if (file && file.size > 0) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random()}-${Date.now()}.${fileExt}`;
+        const { error: storageError } = await supabase.storage
+          .from('orders')
+          .upload(fileName, file);
+
+        if (storageError) throw storageError;
+
+        const { data: publicUrlData } = supabase.storage
+          .from('orders')
+          .getPublicUrl(fileName);
+          
+        fileUrl = publicUrlData.publicUrl;
+      }
+
+      // 2. Prepare Email Data
+      const emailFormData = new FormData();
+      emailFormData.append("access_key", "5ad63c28-59e5-4289-a5a6-dd17fc95c565");
+      emailFormData.append("subject", "New Custom Design Request");
+      emailFormData.append("customer_email", formData.get("customer_email") as string);
+      emailFormData.append("project_name", formData.get("project_name") as string);
+      emailFormData.append("description", formData.get("description") as string);
+      emailFormData.append("reference_link", fileUrl);
+
       const response = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
-        body: formData
+        body: emailFormData
       });
       const data = await response.json();
 
       if (data.success) {
-        // 2. Save to Supabase Database
+        // 3. Save to Database
         const { error: dbError } = await supabase
           .from('orders')
           .insert([{
@@ -114,12 +169,11 @@ export default function UploadPage() {
         setDesignFileName(null);
         setTimeout(() => setIsSuccessDesign(false), 5000);
       } else {
-        console.error("Web3Forms error:", data);
-        alert("Failed to submit form. Please make sure the image is under 5MB.");
+        alert(`Submission Failed: ${data.message}`);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Submission error:", error);
-      alert("Something went wrong. Please try again.");
+      alert(`Error: ${error.message || "Something went wrong"}`);
     } finally {
       setIsSubmittingDesign(false);
     }

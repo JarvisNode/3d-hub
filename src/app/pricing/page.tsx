@@ -10,13 +10,6 @@ export default function PricingPage() {
       isPopular: false
     },
     {
-      name: "Professional",
-      price: "From ₹2,000",
-      description: "For functional parts requiring high durability.",
-      features: ["ABS, ASA, Nylon, Resin", "0.1mm Layer Height", "1-2 Days Delivery", "Priority Support", "Tight Tolerances (±0.1mm)"],
-      isPopular: true
-    },
-    {
       name: "Custom Design",
       price: "Quote",
       description: "Complete design and prototyping solution.",

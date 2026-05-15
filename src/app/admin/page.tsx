@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Package, Users, ShoppingBag, IndianRupee, Activity, MoreVertical, Edit2, MessageSquare, Bot, ArrowLeft, Check, X, Send, Loader2 } from "lucide-react";
+import { Package, Users, ShoppingBag, Activity, MoreVertical, Edit2, MessageSquare, Bot, ArrowLeft, Check, X, Send, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useEffect } from "react";
 
@@ -279,5 +279,13 @@ export default function AdminDashboardPage() {
         </div>
       )}
     </div>
+  );
+}
+
+function IndianRupee({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M6 3h12" /><path d="M6 8h12" /><path d="m6 13 8.5 8" /><path d="M6 13h3" /><path d="M9 13c6.667 0 6.667-10 0-10" />
+    </svg>
   );
 }
