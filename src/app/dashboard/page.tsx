@@ -15,10 +15,12 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function checkUserAndFetchOrders() {
+      setLoading(true);
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        // Use getSession for faster/more reliable session check on mount
+        const { data: { session } } = await supabase.auth.getSession();
         
-        if (!user) {
+        if (!session?.user) {
           router.push("/login");
           return;
         }
@@ -26,7 +28,7 @@ export default function DashboardPage() {
         const { data, error } = await supabase
           .from('orders')
           .select('*')
-          .eq('customer_email', user.email)
+          .eq('customer_email', session.user.email)
           .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -40,6 +42,14 @@ export default function DashboardPage() {
 
     checkUserAndFetchOrders();
   }, [router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

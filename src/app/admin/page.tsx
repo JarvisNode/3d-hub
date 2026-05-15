@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Package, Users, ShoppingBag, Activity, MoreVertical, Edit2, MessageSquare, Bot, ArrowLeft, Check, X, Send, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { useEffect } from "react";
 
 export default function AdminDashboardPage() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
@@ -13,10 +13,21 @@ export default function AdminDashboardPage() {
   const [adminChat, setAdminChat] = useState<{role: 'admin'|'bot', text: string}[]>([
     { role: 'bot', text: 'Hello Admin! I am online and ready to assist you. Ask me anything when orders start coming in.' }
   ]);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    async function fetchOrders() {
+    async function checkAdminAndFetch() {
       try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user || user.email !== "kumarh62058@gmail.com") {
+          router.push("/");
+          return;
+        }
+
+        setIsAdmin(true);
+
         const { data, error } = await supabase
           .from('orders')
           .select('*')
@@ -25,14 +36,24 @@ export default function AdminDashboardPage() {
         if (error) throw error;
         setOrders(data || []);
       } catch (err) {
-        console.error("Error fetching orders:", err);
+        console.error("Error:", err);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchOrders();
-  }, []);
+    checkAdminAndFetch();
+  }, [router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) return null;
 
   const handleAdminChatSubmit = (e: React.FormEvent) => {
     e.preventDefault();
