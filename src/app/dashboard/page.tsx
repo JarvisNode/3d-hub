@@ -1,13 +1,35 @@
 "use client";
 
 import { useState } from "react";
-import { Package, Clock, Download, ChevronRight, Settings, FileText, ArrowLeft, MessageSquare, Send } from "lucide-react";
+import { Package, Clock, Download, ChevronRight, Settings, FileText, ArrowLeft, MessageSquare, Send, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { supabase } from "@/lib/supabase";
+import { useEffect } from "react";
 
 export default function DashboardPage() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const mockActiveOrders: any[] = [];
+  useEffect(() => {
+    async function fetchOrders() {
+      try {
+        const { data, error } = await supabase
+          .from('orders')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        setOrders(data || []);
+      } catch (err) {
+        console.error("Error fetching orders:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchOrders();
+  }, []);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -44,7 +66,11 @@ export default function DashboardPage() {
             <div className="space-y-6 animate-in fade-in duration-500">
               <h2 className="text-xl font-bold text-white mb-4">Active Orders</h2>
               
-              {mockActiveOrders.length === 0 ? (
+              {loading ? (
+                <div className="flex justify-center py-20">
+                  <Loader2 className="w-8 h-8 text-primary-neon animate-spin" />
+                </div>
+              ) : orders.length === 0 ? (
                 <div className="glass p-12 text-center rounded-2xl border border-white/10">
                   <Package className="w-12 h-12 text-gray-500 mx-auto mb-4 opacity-50" />
                   <h3 className="text-xl font-bold text-white mb-2">No active orders</h3>
@@ -54,18 +80,20 @@ export default function DashboardPage() {
                   </Link>
                 </div>
               ) : (
-                mockActiveOrders.map((order, i) => (
+                orders.map((order, i) => (
                   <div key={i} className="glass p-6 rounded-2xl border border-white/10 hover:border-white/20 transition-colors cursor-pointer group" onClick={() => setSelectedOrder(order)}>
                     <div className="flex flex-col md:flex-row justify-between mb-4 gap-4">
                       <div>
                         <div className="flex items-center gap-3 mb-1">
-                          <h3 className="text-lg font-bold text-white group-hover:text-primary-neon transition-colors">{order.title}</h3>
-                          <span className="text-xs font-mono text-gray-500 bg-white/5 px-2 py-1 rounded">{order.id}</span>
+                          <h3 className="text-lg font-bold text-white group-hover:text-primary-neon transition-colors">
+                            {order.type === 'STL' ? '3D Printing Order' : (order.project_name || 'Custom Design')}
+                          </h3>
+                          <span className="text-[10px] font-mono text-gray-500 bg-white/5 px-2 py-1 rounded">#{order.id.slice(0,8)}</span>
                         </div>
-                        <p className="text-sm text-gray-400">Placed on {order.date}</p>
+                        <p className="text-sm text-gray-400">Placed on {new Date(order.created_at).toLocaleDateString()}</p>
                       </div>
                       <div className="flex flex-col items-start md:items-end gap-2">
-                        <span className={`text-xs font-bold px-3 py-1 rounded-full bg-white/5 ${order.color === 'bg-blue-500' ? 'text-blue-400' : 'text-yellow-400'}`}>
+                        <span className={`text-xs font-bold px-3 py-1 rounded-full bg-white/5 ${order.status === 'Completed' ? 'text-green-400' : 'text-yellow-400'}`}>
                           {order.status}
                         </span>
                         <button className="text-sm text-primary-neon flex items-center gap-1 hover:underline">
@@ -80,7 +108,7 @@ export default function DashboardPage() {
                         <span>{order.progress}%</span>
                       </div>
                       <div className="w-full bg-white/5 rounded-full h-2">
-                        <div className={`${order.color} h-2 rounded-full`} style={{ width: `${order.progress}%` }}></div>
+                        <div className={`bg-primary h-2 rounded-full`} style={{ width: `${order.progress}%` }}></div>
                       </div>
                     </div>
                   </div>

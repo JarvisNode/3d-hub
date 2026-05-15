@@ -2,6 +2,7 @@
 
 import { Upload as UploadIcon, FileUp, Zap, CheckCircle2, Image as ImageIcon } from "lucide-react";
 import { useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 export default function UploadPage() {
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
@@ -37,12 +38,28 @@ export default function UploadPage() {
     formData.append("subject", "New STL Print Quote Request from 3D Hub");
 
     try {
+      // 1. Send Email via Web3Forms
       const response = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
         body: formData
       });
       const data = await response.json();
+      
       if (data.success) {
+        // 2. Save to Supabase Database
+        const { error: dbError } = await supabase
+          .from('orders')
+          .insert([{
+            customer_email: formData.get("customer_email"),
+            type: 'STL',
+            material: formData.get("material"),
+            infill_density: formData.get("infill_density"),
+            status: 'Pending',
+            progress: 10
+          }]);
+
+        if (dbError) throw dbError;
+
         setIsSuccessStl(true);
         form.reset();
         setSelectedFileName(null);
@@ -52,7 +69,8 @@ export default function UploadPage() {
         alert("Failed to submit form. Please make sure the file is under 5MB.");
       }
     } catch (error) {
-      console.error(error);
+      console.error("Submission error:", error);
+      alert("Something went wrong. Please try again.");
     } finally {
       setIsSubmittingStl(false);
     }
@@ -69,12 +87,28 @@ export default function UploadPage() {
     formData.append("subject", "New Custom Design Request from 3D Hub");
 
     try {
+      // 1. Send Email via Web3Forms
       const response = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
         body: formData
       });
       const data = await response.json();
+
       if (data.success) {
+        // 2. Save to Supabase Database
+        const { error: dbError } = await supabase
+          .from('orders')
+          .insert([{
+            customer_email: formData.get("customer_email"),
+            type: 'Design',
+            project_name: formData.get("project_name"),
+            description: formData.get("description"),
+            status: 'Reviewing',
+            progress: 5
+          }]);
+
+        if (dbError) throw dbError;
+
         setIsSuccessDesign(true);
         form.reset();
         setDesignFileName(null);
@@ -84,7 +118,8 @@ export default function UploadPage() {
         alert("Failed to submit form. Please make sure the image is under 5MB.");
       }
     } catch (error) {
-      console.error(error);
+      console.error("Submission error:", error);
+      alert("Something went wrong. Please try again.");
     } finally {
       setIsSubmittingDesign(false);
     }

@@ -1,14 +1,38 @@
 "use client";
 
 import { useState } from "react";
-import { Users, ShoppingBag, IndianRupee, Activity, MoreVertical, Edit2, MessageSquare, Bot, ArrowLeft, Check, X, Send } from "lucide-react";
+import { Package, Users, ShoppingBag, IndianRupee, Activity, MoreVertical, Edit2, MessageSquare, Bot, ArrowLeft, Check, X, Send, Loader2 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { useEffect } from "react";
 
 export default function AdminDashboardPage() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [adminInput, setAdminInput] = useState("");
   const [adminChat, setAdminChat] = useState<{role: 'admin'|'bot', text: string}[]>([
     { role: 'bot', text: 'Hello Admin! I am online and ready to assist you. Ask me anything when orders start coming in.' }
   ]);
+
+  useEffect(() => {
+    async function fetchOrders() {
+      try {
+        const { data, error } = await supabase
+          .from('orders')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        setOrders(data || []);
+      } catch (err) {
+        console.error("Error fetching orders:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchOrders();
+  }, []);
 
   const handleAdminChatSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,20 +48,16 @@ export default function AdminDashboardPage() {
       const lower = adminInput.toLowerCase();
       
       if (lower.includes("who")) {
-         botResponse = "The latest order (ORD-8924) was placed by Alex Mercer. ORD-8925 was placed by Sarah Connor.";
+         botResponse = `The latest order (#${orders[0]?.id?.slice(0,8) || 'N/A'}) was placed by ${orders[0]?.customer_email || 'someone'}.`;
       } else if (lower.includes("price") || lower.includes("cost")) {
-         botResponse = "Based on material (PETG) and 50% infill for ORD-8924, the production cost is ~₹1,200. I recommend pricing it at ₹6,800 for a solid margin.";
+         botResponse = "I recommend pricing custom design requests at ₹6,800 base + material costs for a solid margin.";
       } else if (lower.includes("good") || lower.includes("best") || lower.includes("feasible")) {
-         botResponse = "ORD-8924 (Drone Frame) is an excellent, straightforward print with high success probability. However, ORD-8925 (Anime Figure) requires complex supports and SLA resin—price it higher for the extra labor.";
-      } else if (lower.includes("what kind") || lower.includes("type")) {
-         botResponse = "ORD-8924 is a functional mechanical part. ORD-8925 is a high-detail custom sculpture. ORD-8926 is a standard utility print.";
+         botResponse = "Standard STL prints are generally very feasible. Complex resins require higher setup fees.";
       }
 
       setAdminChat([...newChat, { role: 'bot' as const, text: botResponse }]);
     }, 1000);
   };
-
-  const mockOrders: any[] = [];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -54,9 +74,9 @@ export default function AdminDashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             {[
               { title: "Total Revenue", value: "₹9,96,000", icon: IndianRupee, color: "text-green-400" },
-              { title: "Active Orders", value: "24", icon: ShoppingBag, color: "text-blue-400" },
+              { title: "Active Orders", value: orders.length.toString(), icon: ShoppingBag, color: "text-blue-400" },
               { title: "New Customers", value: "142", icon: Users, color: "text-purple-400" },
-              { title: "Pending Reviews", value: "7", icon: Activity, color: "text-yellow-400" }
+              { title: "Pending Reviews", value: orders.filter(o => o.status === 'Pending').length.toString(), icon: Activity, color: "text-yellow-400" }
             ].map((stat, i) => (
               <div key={i} className="glass p-6 rounded-2xl border border-white/10 flex items-start justify-between">
                 <div>
@@ -86,26 +106,31 @@ export default function AdminDashboardPage() {
                       <th className="px-6 py-4 font-medium">Customer</th>
                       <th className="px-6 py-4 font-medium">Type</th>
                       <th className="px-6 py-4 font-medium">Status</th>
-                      <th className="px-6 py-4 font-medium">Amount</th>
                       <th className="px-6 py-4 font-medium text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
-                    {mockOrders.length === 0 ? (
+                    {loading ? (
                       <tr>
-                        <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                        <td colSpan={5} className="px-6 py-12 text-center">
+                          <Loader2 className="w-6 h-6 mx-auto animate-spin text-primary-neon" />
+                        </td>
+                      </tr>
+                    ) : orders.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
                           <ShoppingBag className="w-8 h-8 mx-auto mb-3 opacity-50" />
                           No active orders yet. When customers place orders, they will appear here.
                         </td>
                       </tr>
                     ) : (
-                      mockOrders.map((order, i) => (
+                      orders.map((order, i) => (
                         <tr key={i} onClick={() => setSelectedOrder(order)} className="hover:bg-white/10 transition-colors cursor-pointer group">
-                          <td className="px-6 py-4 font-mono text-white group-hover:text-primary-neon">{order.id}</td>
-                          <td className="px-6 py-4">{order.customer}</td>
+                          <td className="px-6 py-4 font-mono text-white group-hover:text-primary-neon">#{order.id.slice(0,8)}</td>
+                          <td className="px-6 py-4 truncate max-w-[150px]">{order.customer_email}</td>
                           <td className="px-6 py-4">{order.type}</td>
                           <td className="px-6 py-4">
-                            <span className={`px-2 py-1 rounded text-xs font-bold ${
+                            <span className={`px-2 py-1 rounded text-[10px] font-bold ${
                               order.status === 'Completed' ? 'bg-green-500/20 text-green-400' :
                               order.status === 'Printing' ? 'bg-blue-500/20 text-blue-400' :
                               'bg-yellow-500/20 text-yellow-400'
@@ -113,9 +138,8 @@ export default function AdminDashboardPage() {
                               {order.status}
                             </span>
                           </td>
-                          <td className="px-6 py-4">{order.amount}</td>
                           <td className="px-6 py-4 text-right">
-                            <button className="text-primary-neon hover:text-white p-1 text-xs font-bold">View Details</button>
+                            <button className="text-primary-neon hover:text-white p-1 text-xs font-bold">Manage</button>
                           </td>
                         </tr>
                       ))

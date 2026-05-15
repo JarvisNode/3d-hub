@@ -110,32 +110,50 @@ export default function Home() {
               <div className="glass rounded-3xl border border-white/10 p-6 md:p-8 relative">
                 <div className="flex flex-col gap-4">
                   <div className="self-end glass border border-white/10 text-white p-4 rounded-2xl rounded-br-sm max-w-[80%] text-sm">
-                    I want to print a robot arm but I only have a photo.
+                    नमस्ते, मुझे एक रोबोटिक आर्म प्रिंट करना है पर मेरे पास STL फाइल नहीं है।
                   </div>
                   <div className="self-start bg-primary text-white p-4 rounded-2xl rounded-bl-sm max-w-[80%] text-sm">
-                    No problem. Upload the photo and our team will create a custom 3D model for you. Our engineers can also suggest the best material for robotic joints (like PETG or ABS).
+                    नमस्ते! कोई बात नहीं। आप फोटो या स्केच अपलोड कर सकते हैं, हमारी टीम आपके लिए 3D मॉडल बना देगी। क्या आप इसकी डायमेंशन बता सकते हैं?
                   </div>
                   <div className="self-end glass border border-white/10 text-white p-4 rounded-2xl rounded-br-sm max-w-[80%] text-sm">
-                    Great! How much will it cost and how long?
+                    हाँ, यह लगभग 15cm का होगा। कौन सा मटेरियल बेस्ट रहेगा?
+                  </div>
+                  <div className="self-start bg-primary text-white p-4 rounded-2xl rounded-bl-sm max-w-[80%] text-sm">
+                    रोबोटिक पार्ट्स के लिए **PETG** सबसे अच्छा है क्योंकि यह काफी मजबूत और टिकाऊ होता है।
                   </div>
                 </div>
               </div>
             </div>
             <div className="flex-1 space-y-8 order-1 lg:order-2">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass border border-primary/30 text-sm text-primary-neon mb-2">
-                <Box className="w-4 h-4" /> Powered by OpenAI
+                <Box className="w-4 h-4" /> Futuristic AI Assistant
               </div>
-              <h2 className="text-3xl md:text-5xl font-bold text-white">
-                Meet your new <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-neon to-secondary-neon">AI 3D Printing Assistant.</span>
+              <h2 className="text-4xl md:text-6xl font-bold text-white leading-tight">
+                Meet Your <br/>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-neon to-secondary-neon">AI 3D Printing Assistant.</span>
               </h2>
-              <p className="text-lg text-gray-400">
-                Not sure which material to use? Don't have an STL file? Our intelligent chatbot is here to guide you through the entire process, from concept to delivery.
+              <p className="text-xl text-gray-400">
+                Upload your idea, ask questions, get instant recommendations, and turn concepts into real-world 3D printed products.
               </p>
               <ul className="space-y-4 text-gray-300">
-                <li className="flex items-center gap-3"><Star className="w-5 h-5 text-primary-neon" /> Instant cost estimations</li>
-                <li className="flex items-center gap-3"><Star className="w-5 h-5 text-primary-neon" /> Material recommendations</li>
-                <li className="flex items-center gap-3"><Star className="w-5 h-5 text-primary-neon" /> File analysis and design assistance</li>
+                <li className="flex items-center gap-3 font-medium"><Star className="w-5 h-5 text-primary-neon shadow-[0_0_10px_rgba(56,189,248,0.8)]" /> 24/7 Smart 3D Consultation</li>
+                <li className="flex items-center gap-3 font-medium"><Star className="w-5 h-5 text-primary-neon shadow-[0_0_10px_rgba(56,189,248,0.8)]" /> Hindi & English Multi-lingual Support</li>
+                <li className="flex items-center gap-3 font-medium"><Star className="w-5 h-5 text-primary-neon shadow-[0_0_10px_rgba(56,189,248,0.8)]" /> Material & Price Estimation</li>
+                <li className="flex items-center gap-3 font-medium"><Star className="w-5 h-5 text-primary-neon shadow-[0_0_10px_rgba(56,189,248,0.8)]" /> Live Order Tracking System</li>
               </ul>
+              
+              <div className="pt-4">
+                <button 
+                  onClick={() => {
+                    const event = new CustomEvent('openChat');
+                    window.dispatchEvent(event);
+                  }}
+                  className="bg-white text-black hover:bg-gray-200 px-8 py-4 rounded-full font-bold transition-all flex items-center gap-2"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  Chat With AI Assistant
+                </button>
+              </div>
             </div>
           </div>
         </div>
