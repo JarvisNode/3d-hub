@@ -5,31 +5,41 @@ import { Package, Clock, Download, ChevronRight, Settings, FileText, ArrowLeft, 
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    async function fetchOrders() {
+    async function checkUserAndFetchOrders() {
       try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          router.push("/login");
+          return;
+        }
+
         const { data, error } = await supabase
           .from('orders')
           .select('*')
+          .eq('customer_email', user.email)
           .order('created_at', { ascending: false });
 
         if (error) throw error;
         setOrders(data || []);
       } catch (err) {
-        console.error("Error fetching orders:", err);
+        console.error("Error:", err);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchOrders();
-  }, []);
+    checkUserAndFetchOrders();
+  }, [router]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

@@ -2,10 +2,31 @@
 
 import Link from "next/link";
 import { Menu, X, Box } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+import { useRouter } from "next/navigation";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/");
+  };
 
   return (
     <nav className="fixed w-full z-50 glass border-b-0 border-white/5">
@@ -29,10 +50,19 @@ export default function Navbar() {
           </div>
           
           <div className="hidden md:flex items-center gap-4">
-            <Link href="/dashboard" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Login</Link>
-            <Link href="/upload" className="bg-primary/20 text-primary-neon border border-primary/50 hover:bg-primary/30 px-5 py-2 rounded-full text-sm font-medium transition-all shadow-[0_0_15px_rgba(14,165,233,0.3)] hover:shadow-[0_0_25px_rgba(14,165,233,0.5)]">
-              Get Started
-            </Link>
+            {user ? (
+              <>
+                <Link href="/dashboard" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Dashboard</Link>
+                <button onClick={handleLogout} className="text-sm font-medium text-red-400 hover:text-red-300 transition-colors">Sign Out</button>
+              </>
+            ) : (
+              <>
+                <Link href="/login" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Login</Link>
+                <Link href="/login" className="bg-primary/20 text-primary-neon border border-primary/50 hover:bg-primary/30 px-5 py-2 rounded-full text-sm font-medium transition-all shadow-[0_0_15px_rgba(14,165,233,0.3)] hover:shadow-[0_0_25px_rgba(14,165,233,0.5)]">
+                  Get Started
+                </Link>
+              </>
+            )}
           </div>
           
           <div className="-mr-2 flex md:hidden">
