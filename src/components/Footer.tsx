@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Box, Mail, Phone, MapPin, Globe, Share2, MessageCircle } from "lucide-react";
+import { Box, Mail, Phone, MapPin, MessageCircle } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -18,9 +18,10 @@ export default function Footer() {
               Premium 3D printing and custom modeling hub. We turn your ideas into physical reality with cutting-edge technology.
             </p>
             <div className="flex space-x-4 pt-2">
-              <a href="#" className="text-gray-400 hover:text-primary-neon transition-colors"><Globe className="w-5 h-5" /></a>
-              <a href="#" className="text-gray-400 hover:text-primary-neon transition-colors"><Share2 className="w-5 h-5" /></a>
-              <a href="#" className="text-gray-400 hover:text-primary-neon transition-colors"><MessageCircle className="w-5 h-5" /></a>
+              <a href="https://www.instagram.com/harsh.3dstudio?utm_source=qr&igsh=MXFsZGY4c3h0eGh2OA==" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-primary-neon transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+              </a>
+              <a href="https://wa.me/919997392335" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-primary-neon transition-colors"><MessageCircle className="w-5 h-5" /></a>
             </div>
           </div>
 

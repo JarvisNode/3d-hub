@@ -11,38 +11,61 @@ export default function DashboardPage() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAuthorizing, setIsAuthorizing] = useState(true);
+  const [authStatus, setAuthStatus] = useState("Checking...");
+  const [userData, setUserData] = useState<any>(null);
   const router = useRouter();
 
   useEffect(() => {
     let mounted = true;
-    console.log("Dashboard: Checking auth state...");
 
-    const checkSession = async () => {
-      // Small delay to let Supabase initialize storage session
-      await new Promise(resolve => setTimeout(resolve, 500));
+    const checkAuth = async () => {
+      console.log("Dashboard: Starting robust auth check...");
       
-      const { data: { session } } = await supabase.auth.getSession();
-      console.log("Dashboard Initial Session:", session ? "Found" : "Not Found");
+      // Poll for session over 5 seconds
+      for (let i = 0; i < 5; i++) {
+        if (!mounted) return;
+        setAuthStatus(`Verifying Session (${i + 1}/5)...`);
+        
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          console.log("Dashboard: Session confirmed!");
+          setUserData(session.user);
+          setAuthStatus("Authenticated");
+          fetchUserOrders(session.user.email);
+          setIsAuthorizing(false);
+          return;
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
 
+      // Final network check if polling failed
       if (!mounted) return;
-
-      if (session) {
-        fetchUserOrders(session.user.email);
+      console.log("Dashboard: Polling failed, performing network getUser check...");
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!mounted) return;
+      if (user) {
+        setUserData(user);
+        setAuthStatus("Authenticated");
+        fetchUserOrders(user.email);
+        setIsAuthorizing(false);
       } else {
-        console.log("Dashboard: No session, redirecting to login...");
-        router.push("/login");
+        console.log("Dashboard: No user found, redirecting to login");
+        setAuthStatus("Access Denied");
+        router.replace("/login");
       }
     };
 
-    checkSession();
+    checkAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Dashboard Auth Event:", event, session ? "Session Active" : "No Session");
       if (!mounted) return;
-
-      if (event === "SIGNED_OUT" || !session) {
-        router.push("/login");
+      if (event === "SIGNED_OUT") {
+        router.replace("/login");
       } else if (session) {
+        setUserData(session.user);
         fetchUserOrders(session.user.email);
       }
     });
@@ -71,10 +94,13 @@ export default function DashboardPage() {
     }
   }
 
-  if (loading) {
+  if (isAuthorizing || loading) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#030014] gap-4">
+        <Loader2 className="w-12 h-12 text-primary-neon animate-spin" />
+        <p className="text-gray-400 text-sm font-medium tracking-widest uppercase animate-pulse">
+          {isAuthorizing ? authStatus : "Loading Orders..."}
+        </p>
       </div>
     );
   }
@@ -83,7 +109,7 @@ export default function DashboardPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white">Welcome back, Alex</h1>
+          <h1 className="text-3xl font-bold text-white">Welcome back, {userData?.email?.split('@')[0] || "User"}</h1>
           <p className="text-gray-400">Manage your orders and design requests.</p>
         </div>
         <Link href="/upload" className="bg-primary hover:bg-primary/90 text-white font-medium px-6 py-3 rounded-lg transition-colors">

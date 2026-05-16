@@ -25,7 +25,7 @@ export default function PricingPage() {
         <p className="text-gray-400">Simple, predictable pricing for printing and design services.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
         {plans.map((plan, i) => (
           <div key={i} className={`relative glass p-8 rounded-2xl border ${plan.isPopular ? 'border-primary shadow-[0_0_30px_rgba(14,165,233,0.15)]' : 'border-white/10'} flex flex-col`}>
             {plan.isPopular && (
@@ -44,9 +44,6 @@ export default function PricingPage() {
                 </li>
               ))}
             </ul>
-            <button className={`w-full py-4 rounded-lg font-bold transition-colors ${plan.isPopular ? 'bg-primary text-white hover:bg-primary/90' : 'glass border border-white/20 text-white hover:bg-white/5'}`}>
-              Get Started
-            </button>
           </div>
         ))}
       </div>

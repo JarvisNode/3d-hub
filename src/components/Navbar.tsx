@@ -52,14 +52,26 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-4">
             {user ? (
               <>
-                <Link href="/dashboard" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Dashboard</Link>
-                <button onClick={handleLogout} className="text-sm font-medium text-red-400 hover:text-red-300 transition-colors">Sign Out</button>
+                <Link href="/dashboard" className="bg-primary/20 text-primary-neon px-5 py-2 rounded-xl text-sm font-bold border border-primary/30 hover:bg-primary/30 transition-all">
+                  Dashboard
+                </Link>
+                <button 
+                  onClick={handleLogout} 
+                  className="text-sm font-medium text-gray-400 hover:text-white transition-colors"
+                >
+                  Sign Out
+                </button>
               </>
             ) : (
               <>
-                <Link href="/login" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Login</Link>
-                <Link href="/login" className="bg-primary/20 text-primary-neon border border-primary/50 hover:bg-primary/30 px-5 py-2 rounded-full text-sm font-medium transition-all shadow-[0_0_15px_rgba(14,165,233,0.3)] hover:shadow-[0_0_25px_rgba(14,165,233,0.5)]">
-                  Get Started
+                <Link href="/login" className="text-sm font-medium text-gray-400 hover:text-white transition-colors">
+                  Log In
+                </Link>
+                <Link 
+                  href="/signup" 
+                  className="bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(14,165,233,0.3)]"
+                >
+                  Sign Up
                 </Link>
               </>
             )}
@@ -85,7 +97,17 @@ export default function Navbar() {
             <Link href="/pricing" className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Pricing</Link>
             <Link href="/about" className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">About</Link>
             <Link href="/contact" className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Contact</Link>
-            <Link href="/dashboard" className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Login</Link>
+            {user ? (
+              <>
+                <Link href="/dashboard" className="text-primary-neon block px-3 py-2 rounded-md text-base font-bold">Dashboard</Link>
+                <button onClick={handleLogout} className="text-red-400 block w-full text-left px-3 py-2 rounded-md text-base font-medium">Sign Out</button>
+              </>
+            ) : (
+              <>
+                <Link href="/login" className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Log In</Link>
+                <Link href="/signup" className="text-primary-neon block px-3 py-2 rounded-md text-base font-bold">Sign Up</Link>
+              </>
+            )}
           </div>
         </div>
       )}

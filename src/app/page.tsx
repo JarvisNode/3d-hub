@@ -61,6 +61,58 @@ export default function Home() {
       </section>
 
 
+      {/* Recent Projects Section */}
+      <section className="w-full py-24 bg-black/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">Our Recent <span className="text-primary-neon">Projects</span></h2>
+            <p className="text-gray-400">Real-world solutions delivered to our clients.</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                title: "Custom Drone Frame",
+                material: "PETG (Carbon Fiber)",
+                desc: "High-strength lightweight frame designed for racing drones.",
+                img: "/3d_printed_drone_frame_1778907326148.png"
+              },
+              {
+                title: "Architectural Prototype",
+                material: "Premium White PLA",
+                desc: "Intricate 1:200 scale model of a futuristic residential tower.",
+                img: "/3d_printed_architectural_model_1778907404628.png"
+              },
+              {
+                title: "Functional Gear Assembly",
+                material: "Industrial Nylon",
+                desc: "Working mechanical assembly for a robotic arm prototype.",
+                img: "/3d_printed_mechanical_gears_1778907431987.png"
+              }
+            ].map((project, i) => (
+              <motion.div 
+                key={i}
+                className="glass rounded-2xl overflow-hidden border border-white/10 hover:border-primary/50 transition-all group"
+                whileHover={{ y: -10 }}
+              >
+                <div className="aspect-video relative overflow-hidden">
+                  <img src={project.img} alt={project.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                  <div className="absolute top-4 left-4">
+                    <span className="bg-primary/80 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
+                      {project.material}
+                    </span>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-white mb-2">{project.title}</h3>
+                  <p className="text-gray-400 text-sm">{project.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* "How It Works" Section */}
       <section className="w-full py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -4,10 +4,10 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Lock, Mail, Loader2, ArrowRight, Sparkles } from "lucide-react";
+import { UserPlus, Mail, Lock, Loader2, ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
 
-export default function LoginPage() {
+export default function SignUpPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -16,13 +16,13 @@ export default function LoginPage() {
 
   useEffect(() => {
     const checkSession = async () => {
-      console.log("Login: Checking existing session...");
+      console.log("SignUp: Checking existing session...");
       // Small delay to prevent bouncing loops
       await new Promise(resolve => setTimeout(resolve, 500));
       const { data: { session } } = await supabase.auth.getSession();
-      console.log("Login: Existing session found?", !!session);
+      console.log("SignUp: Existing session found?", !!session);
       if (session) {
-        console.log("Login: Redirecting to dashboard...");
+        console.log("SignUp: Redirecting to dashboard...");
         router.replace("/dashboard");
       }
     };
@@ -43,41 +43,26 @@ export default function LoginPage() {
     }
   };
 
-  const handleForgotPassword = async () => {
-    if (!email) {
-      setError("Please enter your email address first.");
-      return;
-    }
-    setLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/login?type=recovery`,
-    });
-    setLoading(false);
-    if (error) {
-      setError(error.message);
-    } else {
-      alert("Password reset link sent to your email!");
-    }
-  };
-
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
       });
-      console.log("Login: signInWithPassword result:", data.session ? "Success" : "No Session", error?.message || "No error");
+      console.log("SignUp: signUp result:", data.session ? "Success (Session Created)" : "Success (Check Email)", error?.message || "No error");
       if (error) throw error;
       if (data.session) {
-        console.log("Login: Session created, preparing redirect...");
+        console.log("SignUp: Session exists, preparing redirect...");
         // Small delay to ensure session is persisted
         await new Promise(resolve => setTimeout(resolve, 500));
-        console.log("Login: Redirecting to dashboard NOW");
+        console.log("SignUp: Redirecting to dashboard NOW");
         router.replace("/dashboard");
+      } else {
+        alert("Check your email for the confirmation link!");
       }
     } catch (err: any) {
       setError(err.message);
@@ -99,11 +84,11 @@ export default function LoginPage() {
         className="max-w-md w-full glass p-8 rounded-[2.5rem] border border-white/10 relative shadow-2xl"
       >
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/20 border border-primary/30 mb-4 shadow-[0_0_20px_rgba(14,165,233,0.2)]">
-            <Lock className="text-primary-neon w-8 h-8" />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-secondary/20 border border-secondary/30 mb-4 shadow-[0_0_20px_rgba(236,72,153,0.2)]">
+            <UserPlus className="text-secondary-neon w-8 h-8" />
           </div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Welcome Back</h1>
-          <p className="text-gray-400 mt-2 text-sm">Log in to manage your 3D printing orders</p>
+          <h1 className="text-3xl font-bold text-white tracking-tight">Create Account</h1>
+          <p className="text-gray-400 mt-2 text-sm">Join the future of 3D manufacturing</p>
         </div>
 
         {error && (
@@ -126,7 +111,7 @@ export default function LoginPage() {
             <path fill="#FBBC05" d="M5.94 14.26c-.24-.72-.38-1.49-.38-2.26s.14-1.54.38-2.26L1.96 6.36C.71 8.83 0 11.58 0 14.5c0 2.92.71 5.67 1.96 8.14l3.98-3.13c-.24-.72-.38-1.49-.38-2.25z" />
             <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3.01c-1.08.72-2.45 1.16-4.07 1.16-3.11 0-5.74-2.11-6.68-4.96l-3.98 3.13C3.69 21.43 7.46 24 12 24z" />
           </svg>
-          Google Login
+          Google Sign Up
         </button>
 
         <div className="relative mb-6">
@@ -134,7 +119,7 @@ export default function LoginPage() {
           <div className="relative flex justify-center text-[10px] uppercase tracking-widest"><span className="bg-[#0a0a1a] px-3 text-gray-500">OR EMAIL</span></div>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleSignUp} className="space-y-4">
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-gray-500 ml-1 uppercase tracking-wider">Email Address</label>
             <div className="relative group">
@@ -151,16 +136,7 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-1.5">
-            <div className="flex justify-between items-center ml-1">
-              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Password</label>
-              <button 
-                type="button"
-                onClick={handleForgotPassword}
-                className="text-[10px] text-primary-neon hover:underline font-bold uppercase tracking-wider"
-              >
-                Forgot?
-              </button>
-            </div>
+            <label className="text-[10px] font-bold text-gray-500 ml-1 uppercase tracking-wider">Password</label>
             <div className="relative group">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-primary-neon transition-colors" />
               <input
@@ -177,11 +153,11 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-white text-black py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-gray-100 transition-all shadow-lg active:scale-[0.98] disabled:opacity-50 mt-6"
+            className="w-full bg-secondary text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-secondary/90 transition-all shadow-lg active:scale-[0.98] disabled:opacity-50 mt-6 shadow-[0_0_20px_rgba(236,72,153,0.3)]"
           >
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
               <>
-                Log In
+                Sign Up
                 <ArrowRight className="w-5 h-5" />
               </>
             )}
@@ -190,9 +166,9 @@ export default function LoginPage() {
 
         <div className="mt-8 pt-6 border-t border-white/5 text-center">
           <p className="text-gray-500 text-sm">
-            Don't have an account?{" "}
-            <Link href="/signup" className="text-white hover:text-primary-neon transition-colors font-bold">
-              Sign Up
+            Already have an account?{" "}
+            <Link href="/login" className="text-white hover:text-primary-neon transition-colors font-bold">
+              Log In
             </Link>
           </p>
         </div>

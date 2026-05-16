@@ -14,18 +14,32 @@ export default function AdminDashboardPage() {
     { role: 'bot', text: 'Hello Admin! I am online and ready to assist you. Ask me anything when orders start coming in.' }
   ]);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [authStatus, setAuthStatus] = useState("Checking Admin...");
   const router = useRouter();
 
   useEffect(() => {
     async function checkAdminAndFetch() {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        setAuthStatus("Verifying Admin...");
+        // Delay to allow session stabilization
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        let { data: { user } } = await supabase.auth.getUser();
         
+        if (!user) {
+          setAuthStatus("Retrying...");
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          const { data: { user: retryUser } } = await supabase.auth.getUser();
+          user = retryUser;
+        }
+
         if (!user || user.email !== "kumarh62058@gmail.com") {
-          router.push("/");
+          setAuthStatus("Unauthorized");
+          router.replace("/login");
           return;
         }
 
+        setAuthStatus("Authorized");
         setIsAdmin(true);
 
         const { data, error } = await supabase
@@ -45,10 +59,11 @@ export default function AdminDashboardPage() {
     checkAdminAndFetch();
   }, [router]);
 
-  if (loading) {
+  if (loading || !isAdmin) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#030014] gap-4">
+        <Loader2 className="w-12 h-12 text-primary-neon animate-spin" />
+        <p className="text-gray-400 text-sm font-medium tracking-widest uppercase animate-pulse">{authStatus}</p>
       </div>
     );
   }
